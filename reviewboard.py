@@ -19,6 +19,12 @@ class ReviewBoardError(Exception):
         self.code = None
         self.tags = {}
 
+        if isinstance(json, urllib2.URLError):
+            try:
+                json = json.read()
+            except:
+                json = ""
+
         if isinstance(json, str) or isinstance(json, unicode):
             try:
                 json = simplejson.loads(json)
@@ -219,11 +225,9 @@ class HttpClient:
             if not hasattr(e, 'code'):
                 raise
             if e.code >= 400:
-                raise
+                raise ReviewBoardError(e)
             else:
                 return ""
-        except urllib2.HTTPError, e:
-            raise ReviewBoardError(e.read())
 
     def _process_json(self, data):
         """
