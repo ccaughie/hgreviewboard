@@ -211,7 +211,7 @@ class HttpClient:
                 }
 
         try:
-            r = ApiRequest(method, url, body, headers)
+            r = ApiRequest(method, str(url), body, headers)
             data = urllib2.urlopen(r).read()
             self._cj.save(self.cookie_file)
             return data
