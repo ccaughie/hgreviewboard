@@ -126,11 +126,11 @@ repository. The following options are available::
     if master:
         rparent = repo[master]
     elif outgoingrepo:
-        rparent = remoteparent(ui, repo, rev, upstream=outgoingrepo)
+        rparent = remoteparent(ui, repo, opts, rev, upstream=outgoingrepo)
     elif outgoing:
-        rparent = remoteparent(ui, repo, rev)
+        rparent = remoteparent(ui, repo, opts, rev)
     elif longdiff:
-        parent = remoteparent(ui, repo, rev)
+        parent = remoteparent(ui, repo, opts, rev)
         rparent = None
     else:
         rparent = None
@@ -246,13 +246,13 @@ repository. The following options are available::
         ui.configbool('reviewboard', 'launch_webbrowser'):
         launch_browser(ui, request_url)
 
-def remoteparent(ui, repo, rev, upstream=None):
+def remoteparent(ui, repo, opts, rev, upstream=None):
     if upstream:
         remotepath = ui.expandpath(upstream)
     else:
         remotepath = ui.expandpath(ui.expandpath('reviewboard', 'default-push'),
                                    'default')
-    remoterepo = hg.repository(ui, remotepath)
+    remoterepo = hg.peer(repo, opts, remotepath)
     out = findoutgoing(repo, remoterepo)
     ancestors = repo.changelog.ancestors([repo.lookup(rev)])
     for o in out:
