@@ -254,7 +254,7 @@ def remoteparent(ui, repo, opts, rev, upstream=None):
                                    'default')
     remoterepo = hg.peer(repo, opts, remotepath)
     out = findoutgoing(repo, remoterepo)
-    ancestors = repo.changelog.ancestors([repo.lookup(rev)])
+    ancestors = repo.changelog.ancestors([repo.changelog.rev(repo.lookup(rev))])
     for o in out:
         orev = repo[o]
         a, b, c = repo.changelog.nodesbetween([orev.node()], [repo[rev].node()])
