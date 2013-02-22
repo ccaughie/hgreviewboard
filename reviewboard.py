@@ -295,8 +295,9 @@ class Api20Client(ApiClient):
     Implements the 2.0 version of the API
     """
 
-    def __init__(self, httpclient):
+    def __init__(self, httpclient, username):
         ApiClient.__init__(self, httpclient)
+        self._username = username
         self._repositories = None
         self._pending_user_requests = None
         self._requestcache = {}
@@ -315,7 +316,7 @@ class Api20Client(ApiClient):
 
     def pending_user_requests(self):
         if not self._pending_user_requests:
-            usr = urllib.quote(str(self._httpclient._password_mgr.rb_user))
+            usr = urllib.quote(self._username)
             delta = datetime.timedelta(days=7)
             today = datetime.datetime.today()
             sevenDaysAgo = today - delta
@@ -496,7 +497,7 @@ def make_rbclient(url, username, password, proxy=None, apiver=''):
             apiver = '1.0'
 
     if apiver == '2.0':
-        return Api20Client(httpclient)
+        return Api20Client(httpclient, username)
     elif apiver == '1.0':
         cli = Api10Client(httpclient)
         cli.login(username, password)
