@@ -204,7 +204,7 @@ repository. The following options are available::
         except ReviewBoardError, msg:
             raise util.Abort(_(str(msg)))
     else:
-        if repo_id_opt:
+        if type(repo_id_opt) is int:
             repo_id = str(int(repo_id_opt))
         else:
             try:
@@ -215,18 +215,25 @@ repository. The following options are available::
             if not repositories:
                 raise util.Abort(_('no repositories configured at %s' % server))
 
-            ui.status('Repositories:\n')
-            repo_ids = set()
-            for r in repositories:
-                ui.status('[%s] %s\n' % (r.id, r.name) )
-                repo_ids.add(str(r.id))
-            if len(repositories) > 1:
-                repo_id = ui.prompt('repository id:', 0)
-                if not repo_id in repo_ids:
-                    raise util.Abort(_('invalid repository ID: %s') % repo_id)
+            if type(repo_id_opt) is str:
+                repo_dict = dict((r.name,r.id) for r in repositories)
+                if repo_id_opt in repo_dict:
+                    repo_id = repo_dict[repo_id_opt]
+                else:
+                    raise util.Abort(_('invalid repository ID: %s') % repo_id_opt)
             else:
-                repo_id = str(repositories[0].id)
-                ui.status('repository id: %s\n' % repo_id)
+                ui.status('Repositories:\n')
+                repo_ids = set()
+                for r in repositories:
+                    ui.status('[%s] %s\n' % (r.id, r.name) )
+                    repo_ids.add(str(r.id))
+                if len(repositories) > 1:
+                    repo_id = ui.prompt('repository id:', 0)
+                    if not repo_id in repo_ids:
+                        raise util.Abort(_('invalid repository ID: %s') % repo_id)
+                else:
+                    repo_id = str(repositories[0].id)
+                    ui.status('repository id: %s\n' % repo_id)
 
         try:
             request_id = reviewboard.new_request(repo_id, fields, diff, parentdiff)
@@ -332,7 +339,7 @@ cmdtable = {
         ('O', 'outgoingrepo', '',
          _('use specified repository to determine the parent diff base')),
         ('i', 'repoid', '',
-         _('specify repository id on reviewboard server')),
+         _('specify repository id or name on reviewboard server')),
         ('m', 'master', '',
          _('use specified revision as the parent diff base')),
         ('', 'server', '', _('ReviewBoard server URL')),
