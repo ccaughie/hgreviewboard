@@ -193,7 +193,8 @@ repository. The following options are available::
 
     try:
         reviewboard = make_rbclient(server, username, password, proxy=proxy,
-                                    apiver=opts.get('apiver'))
+                                    apiver=opts.get('apiver'),
+                                    trace=opts.get('apitrace'))
     except Exception, e:
         raise util.Abort(_(str(e)))
 
@@ -361,6 +362,7 @@ cmdtable = {
         ('', 'username', '', _('username for the ReviewBoard site')),
         ('', 'password', '', _('password for the ReviewBoard site')),
         ('', 'apiver', '', _('ReviewBoard API version (e.g. 1.0, 2.0)')),
+        ('', 'apitrace', False, _('Output all API requests and responses to the console'))
         ],
         _('hg postreview [OPTION]... [REVISION]')),
 }

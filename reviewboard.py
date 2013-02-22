@@ -131,7 +131,7 @@ class HttpErrorHandler(urllib2.HTTPDefaultErrorHandler):
             return result
 
 class HttpClient:
-    def __init__(self, url, proxy=None):
+    def __init__(self, url, proxy=None, trace=False):
         if not url.endswith('/'):
             url = url + '/'
         self.url       = url
@@ -158,6 +158,7 @@ class HttpClient:
                         urllib2.HTTPDigestAuthHandler(self._password_mgr)
                         )
         urllib2.install_opener(self._opener)
+        self._trace = trace
 
     def set_credentials(self, username, password):
         self._password_mgr.set_credentials(username, password)
@@ -228,14 +229,26 @@ class HttpClient:
 
         try:
             r = ApiRequest(method, str(url), body, headers)
+            self._trace_msg('%s %s\n%s\n' % (r.get_method(), url, body))
             data = urllib2.urlopen(r).read()
+            self._trace_msg('Response:\n%s\n' % data)
             self._cj.save(self.cookie_file)
             return data
         except urllib2.URLError, e:
             if not hasattr(e, 'code'):
+                self._trace_msg('Error:\n%s\n' % e)
                 raise
+
+            self._trace_msg('Response code %s\n' % e.code)
+            
+            try:
+                data = e.read()
+                self._trace_msg('Response:\n%s\n' % data)
+            except:
+                data = ''
+
             if e.code >= 400:
-                raise ReviewBoardError(e)
+                raise ReviewBoardError(data)
             else:
                 return ""
 
@@ -282,6 +295,10 @@ class HttpClient:
         content_type = "multipart/form-data; boundary=%s" % BOUNDARY
 
         return content_type, content
+
+    def _trace_msg(self, text):
+        if self._trace:
+            mercurial.ui.ui().status(text)
 
 class ApiClient:
     def __init__(self, httpclient):
@@ -478,8 +495,8 @@ class Api10Client(ApiClient):
     def _save_draft(self, id):
         self._api_post("/api/json/reviewrequests/%s/draft/save/" % id )
 
-def make_rbclient(url, username, password, proxy=None, apiver=''):
-    httpclient = HttpClient(url, proxy)
+def make_rbclient(url, username, password, proxy=None, apiver='', trace=False):
+    httpclient = HttpClient(url, proxy, trace)
 
     if not httpclient.has_valid_cookie():
         if not username:
