@@ -158,6 +158,9 @@ repository. The following options are available::
     if opts.get('summary'):
         fields['summary'] = toascii(opts.get('summary'))
 
+    if opts.get('description'):
+        fields['description'] = toascii(opts.get('description'))
+
     diff = getdiff(ui, repo, c, parent, opts)
     ui.debug('\n=== Diff from parent to rev ===\n')
     ui.debug(diff + '\n')
@@ -169,7 +172,7 @@ repository. The following options are available::
     else:
         parentdiff = ''
 
-    for field in ('target_groups', 'target_people'):
+    for field in ('target_groups', 'target_people', 'bugs_closed'):
         if opts.get(field):
             value = ','.join(opts.get(field))
         else:
@@ -342,8 +345,10 @@ cmdtable = {
         ('l','longdiff', False,
          _('review all changes since last upstream sync')),
         ('s', 'summary', '', _('summary for the review request')),
+        ('d', 'description', '', _('description for the review request')),
         ('U', 'target_people', [], _('comma separated list of people needed to review the code')),
         ('G', 'target_groups', [], _('comma separated list of groups needed to review the code')),
+        ('b', 'bugs_closed', [], _('comma separated list of bug numbers')),
         ('w', 'webbrowser', False, _('launch browser to show review')),
         ('', 'username', '', _('username for the ReviewBoard site')),
         ('', 'password', '', _('password for the ReviewBoard site')),
