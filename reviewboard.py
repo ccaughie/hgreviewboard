@@ -5,6 +5,8 @@ import cookielib
 import getpass
 import mimetools
 import os
+import datetime
+import urllib
 import urllib2
 import simplejson
 import mercurial.ui
@@ -57,6 +59,14 @@ class Repository:
         self.name = name
         self.tool = tool
         self.path = path
+
+class Request:
+    """
+    Represents a ReviewBoard request
+    """
+    def __init__(self, id, summary):
+        self.id = id
+        self.summary = summary
 
 class ReviewBoardHTTPPasswordMgr(urllib2.HTTPPasswordMgr):
     """
@@ -288,6 +298,7 @@ class Api20Client(ApiClient):
     def __init__(self, httpclient):
         ApiClient.__init__(self, httpclient)
         self._repositories = None
+        self._pending_user_requests = None
         self._requestcache = {}
 
     def login(self, username=None, password=None):
@@ -301,6 +312,23 @@ class Api20Client(ApiClient):
                                              r['path'])
                                   for r in rsp['repositories']]
         return self._repositories
+
+    def pending_user_requests(self):
+        if not self._pending_user_requests:
+            usr = urllib.quote(str(self._httpclient._password_mgr.rb_user))
+            delta = datetime.timedelta(days=7)
+            today = datetime.datetime.today()
+            sevenDaysAgo = today - delta
+            date_str = urllib.quote(str(sevenDaysAgo))
+
+            rsp = self._api_request('GET',
+                ('/api/review-requests/?from-user=%s&status=pending&' +
+                    'max-results=50&last-updated-from=%s') % (usr, date_str))
+            self._pending_user_requests = []
+
+            for r in rsp['review_requests']:
+                self._pending_user_requests += [Request(r['id'], r['summary'].strip())]
+        return self._pending_user_requests
 
     def new_request(self, repo_id, fields={}, diff='', parentdiff=''):
         req = self._create_request(repo_id)
