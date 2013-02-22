@@ -172,13 +172,14 @@ repository. The following options are available::
     else:
         parentdiff = ''
 
-    for field in ('target_groups', 'target_people', 'bugs_closed'):
-        if opts.get(field):
-            value = ','.join(opts.get(field))
-        else:
-            value = ui.config('reviewboard', field)
-        if value:
-            fields[field] = toascii(value)
+    if opts.get('update') or not request_id:
+        for field in ('target_groups', 'target_people', 'bugs_closed'):
+            if opts.get(field):
+                value = ','.join(opts.get(field))
+            else:
+                value = ui.config('reviewboard', field)
+            if value:
+                fields[field] = toascii(value)
 
     ui.status('\n%s\n' % changesets_string)
     ui.status('reviewboard:\t%s\n' % server)
