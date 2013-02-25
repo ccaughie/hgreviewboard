@@ -206,9 +206,9 @@ repository. The following options are available::
         except ReviewBoardError, msg:
             raise util.Abort(_(str(msg)))
     else:
-        if type(repo_id_opt) is int:
+        try:
             repo_id = str(int(repo_id_opt))
-        else:
+        except ValueError:
             try:
                 repositories = reviewboard.repositories()
             except ReviewBoardError, msg:
