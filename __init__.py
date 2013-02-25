@@ -206,9 +206,16 @@ repository. The following options are available::
         except ReviewBoardError, msg:
             raise util.Abort(_(str(msg)))
     else:
-        try:
-            repo_id = str(int(repo_id_opt))
-        except ValueError:
+        repo_id = None
+        repo_name = None
+
+        if repo_id_opt:
+            try:
+                repo_id = str(int(repo_id_opt))
+            except ValueError:
+                repo_name = repo_id_opt
+
+        if not repo_id:
             try:
                 repositories = reviewboard.repositories()
             except ReviewBoardError, msg:
@@ -217,12 +224,12 @@ repository. The following options are available::
             if not repositories:
                 raise util.Abort(_('no repositories configured at %s' % server))
 
-            if type(repo_id_opt) is str:
-                repo_dict = dict((r.name,r.id) for r in repositories)
-                if repo_id_opt in repo_dict:
+            if repo_name:
+                repo_dict = dict((r.name, r.id) for r in repositories)
+                if repo_name in repo_dict:
                     repo_id = repo_dict[repo_id_opt]
                 else:
-                    raise util.Abort(_('invalid repository ID: %s') % repo_id_opt)
+                    raise util.Abort(_('invalid repository name: %s') % repo_name)
             else:
                 ui.status('Repositories:\n')
                 repo_ids = set()
