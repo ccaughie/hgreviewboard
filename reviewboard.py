@@ -229,7 +229,7 @@ class HttpClient:
 
         try:
             r = ApiRequest(method, str(url), body, headers)
-            self._trace_msg('%s %s\n%s\n' % (r.get_method(), url, body))
+            self._trace_msg('%s %s\n%s\n' % (r.get_method(), str(url), body))
             data = urllib2.urlopen(r).read()
             self._trace_msg('Response:\n%s\n' % data)
             self._cj.save(self.cookie_file)
