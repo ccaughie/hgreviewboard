@@ -229,21 +229,21 @@ class HttpClient:
 
         try:
             r = ApiRequest(method, str(url), body, headers)
-            self._trace_msg('%s %s\n%s\n' % (r.get_method(), str(url), body))
+            self._trace_msg('%s %s\n%s\n', r.get_method(), url, body)
             data = urllib2.urlopen(r).read()
-            self._trace_msg('Response:\n%s\n' % data)
+            self._trace_msg('Response:\n%s\n', data)
             self._cj.save(self.cookie_file)
             return data
         except urllib2.URLError, e:
             if not hasattr(e, 'code'):
-                self._trace_msg('Error:\n%s\n' % e)
+                self._trace_msg('Error:\n%s\n', e)
                 raise
 
-            self._trace_msg('Response code %s\n' % e.code)
-            
+            self._trace_msg('Response code %s\n', e.code)
+
             try:
                 data = e.read()
-                self._trace_msg('Response:\n%s\n' % data)
+                self._trace_msg('Response:\n%s\n', data)
             except:
                 data = ''
 
@@ -296,9 +296,23 @@ class HttpClient:
 
         return content_type, content
 
-    def _trace_msg(self, text):
+    def _trace_msg(self, text, *args):
+        def _to_ascii_char(x):
+            if ord(x) >= 32 and ord(x) < 128:
+                return x
+            else:
+                return "\\x%02x" % ord(x)
+
+        def _to_ascii(data):
+            print "Tracing object of type %s" % type(data)
+
+            if (type(data) == str):
+                return ''.join([_to_ascii_char(x) for x in data])
+            else:
+                return str(data)
+
         if self._trace:
-            mercurial.ui.ui().status(text)
+            mercurial.ui.ui().status(text % tuple([_to_ascii(a) for a in args]))
 
 class ApiClient:
     def __init__(self, httpclient):
