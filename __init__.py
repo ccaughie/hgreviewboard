@@ -45,6 +45,10 @@ The --git option causes postreview to generate diffs in Git extended format,
 which includes information about file renames and copies. ReviewBoard 1.6 beta
 2 or later is required in order to use this feature.
 
+The --submit_as option allows to submit the review request as another user.
+This requires that the actual logged in user is either a superuser or has the
+"reviews.can_submit_as_another_user" permission.
+
 The reviewboard extension may be configured by adding a [reviewboard] section
 to your .hgrc or mercurial.ini file, or to the .hg/hgrc file of an individual
 repository. The following options are available::
@@ -208,6 +212,7 @@ repository. The following options are available::
     else:
         repo_id = None
         repo_name = None
+        submit_as = opts.get('submit_as')
 
         if repo_id_opt:
             try:
@@ -245,7 +250,8 @@ repository. The following options are available::
                     ui.status('repository id: %s\n' % repo_id)
 
         try:
-            request_id = reviewboard.new_request(repo_id, fields, diff, parentdiff)
+            request_id = reviewboard.new_request(repo_id, fields, diff,
+                                                 parentdiff, submit_as)
             if opts.get('publish'):
                 reviewboard.publish(request_id)
         except ReviewBoardError, msg:
@@ -368,6 +374,7 @@ cmdtable = {
         ('w', 'webbrowser', False, _('launch browser to show review')),
         ('', 'username', '', _('username for the ReviewBoard site')),
         ('', 'password', '', _('password for the ReviewBoard site')),
+        ('', 'submit_as', '', _('The optional user to submit the review request as.')),
         ('', 'apiver', '', _('ReviewBoard API version (e.g. 1.0, 2.0)')),
         ('', 'apitrace', False, _('Output all API requests and responses to the console'))
         ],

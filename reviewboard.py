@@ -362,8 +362,8 @@ class Api20Client(ApiClient):
                 self._pending_user_requests += [Request(r['id'], r['summary'].strip())]
         return self._pending_user_requests
 
-    def new_request(self, repo_id, fields={}, diff='', parentdiff=''):
-        req = self._create_request(repo_id)
+    def new_request(self, repo_id, fields={}, diff='', parentdiff='', submit_as=None):
+        req = self._create_request(repo_id, submit_as)
         self._set_request_details(req, fields, diff, parentdiff)
         self._requestcache[req['id']] = req
         return req['id']
@@ -379,8 +379,10 @@ class Api20Client(ApiClient):
         drafturl = req['links']['draft']['href']
         self._api_request('PUT', drafturl, {'public':'1'})
 
-    def _create_request(self, repo_id):
+    def _create_request(self, repo_id, submit_as=None):
         data = { 'repository': repo_id }
+        if submit_as:
+            data['submit_as'] = submit_as
         result = self._api_request('POST', '/api/review-requests/', data)
         return result['review_request']
 
