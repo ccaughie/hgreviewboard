@@ -3,7 +3,7 @@
 import os, errno, re
 import cStringIO
 from distutils.version import LooseVersion
-from mercurial import cmdutil, hg, ui, mdiff, patch, util, node
+from mercurial import cmdutil, hg, ui, mdiff, patch, util, node, scmutil
 from mercurial.i18n import _
 
 from reviewboard import make_rbclient, ReviewBoardError
@@ -108,7 +108,8 @@ repository. The following options are available::
             output += "# Node ID " + node.hex(r.node()) + "\n"
             output += "# Parent  " + node.hex(parent.node()) + "\n"
         diffopts = patch.diffopts(ui, opts)
-        for chunk in patch.diff(repo, parent.node(), r.node(), opts=diffopts):
+        m = scmutil.match(repo[r.node()], None, opts)
+        for chunk in patch.diff(repo, parent.node(), r.node(), m, opts=diffopts):
             output += chunk
         return output
 
@@ -376,7 +377,9 @@ cmdtable = {
         ('', 'password', '', _('password for the ReviewBoard site')),
         ('', 'submit_as', '', _('The optional user to submit the review request as.')),
         ('', 'apiver', '', _('ReviewBoard API version (e.g. 1.0, 2.0)')),
-        ('', 'apitrace', False, _('Output all API requests and responses to the console'))
+        ('', 'apitrace', False, _('Output all API requests and responses to the console')),
+        ('I', 'include', [], _('include names matching the given patterns'), _('PATTERN')),
+        ('X', 'exclude', [], _('exclude names matching the given patterns'), _('PATTERN')),
         ],
         _('hg postreview [OPTION]... [REVISION]')),
 }
