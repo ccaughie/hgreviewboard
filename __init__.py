@@ -57,6 +57,7 @@ repository. The following options are available::
 
   # REQUIRED
   server = <server_url>             # The URL of your ReviewBoard server
+  encoding = <system_encoding>      # The Encoding of TortoiseHG form
 
   # OPTIONAL
   http_proxy = <proxy_url>          # HTTP proxy to use for the connection
@@ -86,6 +87,11 @@ repository. The following options are available::
     if not server:
         raise util.Abort(
                 _('please specify a reviewboard server in your .hgrc file') )
+
+    encoding = ui.config('reviewboard', 'encoding')
+    if not encoding:
+        raise util.Abort(
+                _('please specify a reviewboard encoding in your .hgrc file') )
 
     '''We are going to fetch the setting string from hg prefs, there we can set
     our own proxy, or specify 'none' to pass an empty dictionary to urllib2
@@ -156,15 +162,15 @@ repository. The following options are available::
     # Don't clobber the summary and description for an existing request
     # unless specifically asked for    
     if opts.get('update') or not request_id:
-        fields['summary']       = toascii(c.description().splitlines()[0])
-        fields['description']   = toascii(changesets_string)
-        fields['branch']        = toascii(c.branch())
+        fields['summary']       = toascii(c.description().splitlines()[0], encoding)
+        fields['description']   = toascii(changesets_string, encoding)
+        fields['branch']        = toascii(c.branch(), encoding)
 
     if opts.get('summary'):
-        fields['summary'] = toascii(opts.get('summary'))
+        fields['summary'] = toascii(opts.get('summary'), encoding)
 
     if opts.get('description'):
-        fields['description'] = toascii(opts.get('description'))
+        fields['description'] = toascii(opts.get('description'), encoding)
 
     diff = getdiff(ui, repo, c, parent, opts)
     ui.debug('\n=== Diff from parent to rev ===\n')
@@ -184,7 +190,7 @@ repository. The following options are available::
             else:
                 value = ui.config('reviewboard', field)
             if value:
-                fields[field] = toascii(value)
+                fields[field] = toascii(value, encoding)
 
     ui.status('\n%s\n' % changesets_string)
     ui.status('reviewboard:\t%s\n' % server)
@@ -317,12 +323,8 @@ def launch_browser(ui, request_url):
 
     demandimport.enable()
 
-def toascii(s):
-    for i in xrange(len(s)):
-        if ord(s[i]) >= 128:
-            s = s[:i] + '?' + s[i+1:]
-
-    return s
+def toascii(s, encoding):
+    return s.decode(encoding).encode('utf-8')
 
 def get_changesets_string(repo, parentctx, ctx):
     """Build a summary from all changesets included in this review."""
