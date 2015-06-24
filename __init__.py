@@ -5,7 +5,7 @@ import cStringIO
 from distutils.version import LooseVersion
 from mercurial import cmdutil, hg, ui, mdiff, patch, util, node, scmutil
 from mercurial.i18n import _
-
+import sys
 from reviewboard import make_rbclient, ReviewBoardError
 
 def postreview(ui, repo, rev='.', **opts):
@@ -57,7 +57,6 @@ repository. The following options are available::
 
   # REQUIRED
   server = <server_url>             # The URL of your ReviewBoard server
-  encoding = <system_encoding>      # The Encoding of TortoiseHG form
 
   # OPTIONAL
   http_proxy = <proxy_url>          # HTTP proxy to use for the connection
@@ -77,7 +76,7 @@ repository. The following options are available::
   launch_webbrowser = <bool>        # If True, new or updated requests will
                                     # always be shown in a web browser after
                                     # posting.
-
+  encoding = <system_encoding>      # The Encoding of TortoiseHG form
 '''
 
     server = opts.get('server')
@@ -90,8 +89,8 @@ repository. The following options are available::
 
     encoding = ui.config('reviewboard', 'encoding')
     if not encoding:
-        raise util.Abort(
-                _('please specify a reviewboard encoding in your .hgrc file') )
+        # use default system encoding if no config option
+        encoding = sys.stdin.encoding
 
     '''We are going to fetch the setting string from hg prefs, there we can set
     our own proxy, or specify 'none' to pass an empty dictionary to urllib2
