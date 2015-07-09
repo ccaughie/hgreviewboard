@@ -12,6 +12,13 @@ import simplejson
 import mercurial.ui
 from urlparse import urljoin, urlparse
 
+# Python 2.7.9+ added strict HTTPS certificate validation (finally). These APIs
+# don't exist everywhere so soft-import them.
+try:
+    import ssl
+except ImportError:
+    ssl = None
+
 class APIError(Exception):
     pass
 
@@ -131,7 +138,7 @@ class HttpErrorHandler(urllib2.HTTPDefaultErrorHandler):
             return result
 
 class HttpClient:
-    def __init__(self, url, proxy=None, trace=False):
+    def __init__(self, url, proxy=None, trace=False, disable_ssl_verification=False):
         if not url.endswith('/'):
             url = url + '/'
         self.url       = url
@@ -147,16 +154,22 @@ class HttpClient:
         self.cookie_file = os.path.join(homepath, ".post-review-cookies.txt")
         self._cj = cookielib.MozillaCookieJar(self.cookie_file)
         self._password_mgr = ReviewBoardHTTPPasswordMgr(self.url)
-        self._opener = opener = urllib2.build_opener(
-                        urllib2.ProxyHandler(proxy),
-                        urllib2.UnknownHandler(),
-                        urllib2.HTTPHandler(),
-                        HttpErrorHandler(),
-                        urllib2.HTTPErrorProcessor(),
-                        urllib2.HTTPCookieProcessor(self._cj),
-                        urllib2.HTTPBasicAuthHandler(self._password_mgr),
-                        urllib2.HTTPDigestAuthHandler(self._password_mgr)
-                        )
+
+        handlers = [
+            urllib2.ProxyHandler(proxy),
+            urllib2.UnknownHandler(),
+            urllib2.HTTPHandler(),
+            HttpErrorHandler(),
+            urllib2.HTTPErrorProcessor(),
+            urllib2.HTTPCookieProcessor(self._cj),
+            urllib2.HTTPBasicAuthHandler(self._password_mgr),
+            urllib2.HTTPDigestAuthHandler(self._password_mgr)
+        ]
+
+        if disable_ssl_verification and ssl:
+            handlers.append(urllib2.HTTPSHandler(context=ssl._create_unverified_context()))
+
+        self._opener = opener = urllib2.build_opener(*handlers)
         urllib2.install_opener(self._opener)
         self._trace = trace
 
@@ -511,8 +524,8 @@ class Api10Client(ApiClient):
     def _save_draft(self, id):
         self._api_post("/api/json/reviewrequests/%s/draft/save/" % id )
 
-def make_rbclient(url, username, password, proxy=None, apiver='', trace=False):
-    httpclient = HttpClient(url, proxy, trace)
+def make_rbclient(url, username, password, proxy=None, apiver='', trace=False, disable_ssl_verification=False):
+    httpclient = HttpClient(url, proxy, trace, disable_ssl_verification)
 
     if not httpclient.has_valid_cookie():
         if not username:

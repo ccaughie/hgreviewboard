@@ -77,6 +77,7 @@ repository. The following options are available::
                                     # always be shown in a web browser after
                                     # posting.
   encoding = <system_encoding>      # The Encoding of TortoiseHG form
+  disable_ssl_verification = <bool> # If True, SSL verification is disabled.
 '''
 
     server = opts.get('server')
@@ -103,6 +104,10 @@ repository. The following options are available::
             proxy = { 'http':http_proxy }
     else:
         proxy=None
+
+    disable_ssl_verification = opts.get('disable_ssl_verification')
+    if not disable_ssl_verification:
+        disable_ssl_verification = ui.config('reviewboard', 'disable_ssl_verification')
 
     def getdiff(ui, repo, r, parent, opts):
         '''return diff for the specified revision'''
@@ -204,7 +209,8 @@ repository. The following options are available::
     try:
         reviewboard = make_rbclient(server, username, password, proxy=proxy,
                                     apiver=opts.get('apiver'),
-                                    trace=opts.get('apitrace'))
+                                    trace=opts.get('apitrace'),
+                                    disable_ssl_verification=disable_ssl_verification)
     except Exception, e:
         raise util.Abort(_(str(e)))
 
@@ -381,6 +387,7 @@ cmdtable = {
         ('', 'apitrace', False, _('Output all API requests and responses to the console')),
         ('I', 'include', [], _('include names matching the given patterns'), _('PATTERN')),
         ('X', 'exclude', [], _('exclude names matching the given patterns'), _('PATTERN')),
+        ('', 'disable_ssl_verification', False, _('disable SSL certificate verification')),
         ],
         _('hg postreview [OPTION]... [REVISION]')),
 }
