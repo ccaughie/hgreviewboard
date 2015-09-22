@@ -2,7 +2,7 @@
 
 import os, errno, re
 import cStringIO
-from distutils.version import LooseVersion
+from hgversion import HgVersion
 from mercurial import cmdutil, hg, ui, mdiff, patch, util, node, scmutil
 from mercurial.i18n import _
 import sys
@@ -307,7 +307,7 @@ def findoutgoing(repo, remoterepo):
         return repo.findoutgoing(remoterepo)
 
     try:
-        if LooseVersion(util.version()) >= LooseVersion('2.1'):
+        if HgVersion(util.version()) >= HgVersion('2.1'):
             outgoing = discovery.findcommonoutgoing(repo, remoterepo)
             return outgoing.missing
         common, outheads = discovery.findcommonoutgoing(repo, remoterepo)
