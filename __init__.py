@@ -168,6 +168,8 @@ repository. The following options are available::
     fields = {}
 
     c = repo.changectx(rev)
+    if parent is None:
+        parent = repo[0]
     changesets_string = get_changesets_string(repo, parent, c)
 
     # Don't clobber the summary and description for an existing request
