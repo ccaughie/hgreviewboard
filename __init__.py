@@ -119,8 +119,15 @@ repository. The following options are available::
             output += "# Parent  " + node.hex(parent.node()) + "\n"
         diffopts = patch.diffopts(ui, opts)
         m = scmutil.match(repo[r.node()], None, opts)
-        for chunk in patch.diff(repo, parent.node(), r.node(), m, opts=diffopts):
+        if opts.get('working_directory'):
+            compare_cset = r.node()
+            compare_to = None
+        else:
+            compare_cset = parent.node()
+            compare_to = r.node()
+        for chunk in patch.diff(repo, compare_cset, compare_to, m, opts=diffopts):
             output += chunk
+
         return output
 
     parent = opts.get('parent')
@@ -164,7 +171,7 @@ repository. The following options are available::
     changesets_string = get_changesets_string(repo, parent, c)
 
     # Don't clobber the summary and description for an existing request
-    # unless specifically asked for    
+    # unless specifically asked for
     if opts.get('update') or not request_id:
         fields['summary']       = to_utf_8(c.description().splitlines()[0], encoding)
         fields['description']   = to_utf_8(changesets_string, encoding)
@@ -338,7 +345,7 @@ def get_changesets_string(repo, parentctx, ctx):
         currctx = repo[node]
         if node == parentctx.node():
             continue
-            
+
         contexts.append(currctx)
 
     if len(contexts) == 0:
@@ -388,6 +395,7 @@ cmdtable = {
         ('I', 'include', [], _('include names matching the given patterns'), _('PATTERN')),
         ('X', 'exclude', [], _('exclude names matching the given patterns'), _('PATTERN')),
         ('', 'disable_ssl_verification', False, _('disable SSL certificate verification')),
+        ('W', 'working_directory', False, _('produce diff against current working directory')),
         ],
         _('hg postreview [OPTION]... [REVISION]')),
 }
