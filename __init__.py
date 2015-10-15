@@ -180,6 +180,9 @@ repository. The following options are available::
     if opts.get('summary'):
         fields['summary'] = to_utf_8(opts.get('summary'), encoding)
 
+    if opts.get('working_directory'):
+        fields['summary'] = to_utf_8('(gist) ', encoding) + fields['summary']
+
     if opts.get('description'):
         fields['description'] = to_utf_8(opts.get('description'), encoding)
 
