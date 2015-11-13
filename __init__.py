@@ -175,19 +175,15 @@ repository. The following options are available::
     # Don't clobber the summary and description for an existing request
     # unless specifically asked for
     if opts.get('update') or not request_id:
+        fields['summary']       = to_utf_8(c.description().splitlines()[0], encoding)
+        fields['description']   = to_utf_8(changesets_string, encoding)
         fields['branch']        = to_utf_8(c.branch(), encoding)
-        if not opts.get('working_directory'):
-            fields['summary']       = to_utf_8(c.description().splitlines()[0], encoding)
-            fields['description']   = to_utf_8(changesets_string, encoding)
-        else:
-            fields['summary']       = to_utf_8("Uncommitted changes", encoding)
-            fields['description']   = to_utf_8("Uncommitted changes", encoding)
 
     if opts.get('summary'):
         fields['summary'] = to_utf_8(opts.get('summary'), encoding)
 
-        if opts.get('working_directory'):
-            fields['summary'] = to_utf_8('(Uncommitted) ', encoding) + fields['summary']
+    if opts.get('working_directory'):
+        fields['summary'] = to_utf_8('(gist) ', encoding) + fields['summary']
 
     if opts.get('description'):
         fields['description'] = to_utf_8(opts.get('description'), encoding)
