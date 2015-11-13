@@ -175,15 +175,19 @@ repository. The following options are available::
     # Don't clobber the summary and description for an existing request
     # unless specifically asked for
     if opts.get('update') or not request_id:
-        fields['summary']       = to_utf_8(c.description().splitlines()[0], encoding)
-        fields['description']   = to_utf_8(changesets_string, encoding)
         fields['branch']        = to_utf_8(c.branch(), encoding)
+        if not opts.get('working_directory'):
+            fields['summary']       = to_utf_8(c.description().splitlines()[0], encoding)
+            fields['description']   = to_utf_8(changesets_string, encoding)
+        else:
+            fields['summary']       = to_utf_8("Uncommitted changes", encoding)
+            fields['description']   = to_utf_8("Uncommitted changes", encoding)
 
     if opts.get('summary'):
         fields['summary'] = to_utf_8(opts.get('summary'), encoding)
 
-    if opts.get('working_directory'):
-        fields['summary'] = to_utf_8('(gist) ', encoding) + fields['summary']
+        if opts.get('working_directory'):
+            fields['summary'] = to_utf_8('(Uncommitted) ', encoding) + fields['summary']
 
     if opts.get('description'):
         fields['description'] = to_utf_8(opts.get('description'), encoding)
@@ -341,7 +345,10 @@ def launch_browser(ui, request_url):
     demandimport.enable()
 
 def to_utf_8(s, encoding):
-    return s.decode(encoding, 'replace').encode('utf-8')
+    if encoding:
+        return s.decode(encoding, 'replace').encode('utf-8')
+    else:
+        return s.encode('utf-8')
 
 def get_changesets_string(repo, parentctx, ctx):
     """Build a summary from all changesets included in this review."""
