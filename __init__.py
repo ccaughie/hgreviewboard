@@ -344,7 +344,7 @@ def to_utf_8(s, encoding):
     if encoding:
         return s.decode(encoding, 'replace').encode('utf-8')
     else:
-        return s.encode('utf-8')
+        return s
 
 def get_changesets_string(repo, parentctx, ctx):
     """Build a summary from all changesets included in this review."""
