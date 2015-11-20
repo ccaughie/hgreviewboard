@@ -352,10 +352,17 @@ class Api20Client(ApiClient):
 
     def repositories(self):
         if not self._repositories:
-            rsp = self._api_request('GET', '/api/repositories/?max-results=500')
+            rsp = self._api_request('GET', '/api/repositories/?max-results=200&show-invisible=false')
             self._repositories = [Repository(r['id'], r['name'], r['tool'],
                                              r['path'])
                                   for r in rsp['repositories']]
+            while 'next' in rsp['links']:
+                path = rsp['links']['next']['href']
+                method = rsp['links']['next']['method']
+                rsp = self._api_request(method, path)
+                self._repositories.extend([Repository(r['id'], r['name'], r['tool'], r['path'])
+                                           for r in rsp['repositories']])
+
         return self._repositories
 
     def pending_user_requests(self):
