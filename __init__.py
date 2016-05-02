@@ -8,6 +8,45 @@ from mercurial.i18n import _
 import sys
 from reviewboard import make_rbclient, ReviewBoardError
 
+cmdtable = {}
+command = cmdutil.command(cmdtable)
+
+@command( "postreview",
+        [
+        ('o', 'outgoing', False,
+         _('use upstream repository to determine the parent diff base')),
+        ('O', 'outgoingrepo', '',
+         _('use specified repository to determine the parent diff base')),
+        ('i', 'repoid', '',
+         _('specify repository id or name on reviewboard server')),
+        ('m', 'master', '',
+         _('use specified revision as the parent diff base')),
+        ('', 'server', '', _('ReviewBoard server URL')),
+        ('g', 'git', False,
+         _('use git extended diff format (enables rename/copy support)')),
+        ('e', 'existing', '', _('existing request ID to update')),
+        ('u', 'update', False, _('update the fields of an existing request')),
+        ('p', 'publish', None, _('publish request immediately')),
+        ('', 'parent', '', _('parent revision for the uploaded diff')),
+        ('l','longdiff', False,
+         _('review all changes since last upstream sync')),
+        ('s', 'summary', '', _('summary for the review request')),
+        ('d', 'description', '', _('description for the review request')),
+        ('U', 'target_people', [], _('comma separated list of people needed to review the code')),
+        ('G', 'target_groups', [], _('comma separated list of groups needed to review the code')),
+        ('b', 'bugs_closed', [], _('comma separated list of bug numbers')),
+        ('w', 'webbrowser', False, _('launch browser to show review')),
+        ('', 'username', '', _('username for the ReviewBoard site')),
+        ('', 'password', '', _('password for the ReviewBoard site')),
+        ('', 'submit_as', '', _('The optional user to submit the review request as.')),
+        ('', 'apiver', '', _('ReviewBoard API version (e.g. 1.0, 2.0)')),
+        ('', 'apitrace', False, _('Output all API requests and responses to the console')),
+        ('I', 'include', [], _('include names matching the given patterns'), _('PATTERN')),
+        ('X', 'exclude', [], _('exclude names matching the given patterns'), _('PATTERN')),
+        ('', 'disable_ssl_verification', False, _('disable SSL certificate verification')),
+        ('W', 'working_directory', False, _('produce diff against current working directory')),
+        ],
+        _('hg postreview [OPTION]... [REVISION]'))
 def postreview(ui, repo, rev='.', **opts):
     '''post a changeset to a Review Board server
 
@@ -367,43 +406,3 @@ def get_changesets_string(repo, parentctx, ctx):
                 for ctx in contexts])
 
     return changesets_string
-
-cmdtable = {
-    "postreview":
-        (postreview,
-        [
-        ('o', 'outgoing', False,
-         _('use upstream repository to determine the parent diff base')),
-        ('O', 'outgoingrepo', '',
-         _('use specified repository to determine the parent diff base')),
-        ('i', 'repoid', '',
-         _('specify repository id or name on reviewboard server')),
-        ('m', 'master', '',
-         _('use specified revision as the parent diff base')),
-        ('', 'server', '', _('ReviewBoard server URL')),
-        ('g', 'git', False,
-         _('use git extended diff format (enables rename/copy support)')),
-        ('e', 'existing', '', _('existing request ID to update')),
-        ('u', 'update', False, _('update the fields of an existing request')),
-        ('p', 'publish', None, _('publish request immediately')),
-        ('', 'parent', '', _('parent revision for the uploaded diff')),
-        ('l','longdiff', False,
-         _('review all changes since last upstream sync')),
-        ('s', 'summary', '', _('summary for the review request')),
-        ('d', 'description', '', _('description for the review request')),
-        ('U', 'target_people', [], _('comma separated list of people needed to review the code')),
-        ('G', 'target_groups', [], _('comma separated list of groups needed to review the code')),
-        ('b', 'bugs_closed', [], _('comma separated list of bug numbers')),
-        ('w', 'webbrowser', False, _('launch browser to show review')),
-        ('', 'username', '', _('username for the ReviewBoard site')),
-        ('', 'password', '', _('password for the ReviewBoard site')),
-        ('', 'submit_as', '', _('The optional user to submit the review request as.')),
-        ('', 'apiver', '', _('ReviewBoard API version (e.g. 1.0, 2.0)')),
-        ('', 'apitrace', False, _('Output all API requests and responses to the console')),
-        ('I', 'include', [], _('include names matching the given patterns'), _('PATTERN')),
-        ('X', 'exclude', [], _('exclude names matching the given patterns'), _('PATTERN')),
-        ('', 'disable_ssl_verification', False, _('disable SSL certificate verification')),
-        ('W', 'working_directory', False, _('produce diff against current working directory')),
-        ],
-        _('hg postreview [OPTION]... [REVISION]')),
-}
