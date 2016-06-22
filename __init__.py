@@ -11,9 +11,8 @@ from reviewboard import make_rbclient, ReviewBoardError
 cmdtable = {}
 command = cmdutil.command(cmdtable)
 
-@command( "postreview",
-        [
-        ('o', 'outgoing', False,
+@command('postreview',
+        [('o', 'outgoing', False,
          _('use upstream repository to determine the parent diff base')),
         ('O', 'outgoingrepo', '',
          _('use specified repository to determine the parent diff base')),
@@ -44,9 +43,9 @@ command = cmdutil.command(cmdtable)
         ('I', 'include', [], _('include names matching the given patterns'), _('PATTERN')),
         ('X', 'exclude', [], _('exclude names matching the given patterns'), _('PATTERN')),
         ('', 'disable_ssl_verification', False, _('disable SSL certificate verification')),
-        ('W', 'working_directory', False, _('produce diff against current working directory')),
+        ('W', 'working_directory', False, _('produce diff against current working directory'))
         ],
-        _('hg postreview [OPTION]... [REVISION]'))
+        _('[options] [REVISION]'))
 def postreview(ui, repo, rev='.', **opts):
     '''post a changeset to a Review Board server
 
