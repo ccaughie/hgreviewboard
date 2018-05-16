@@ -3,7 +3,7 @@
 import os, errno, re
 import cStringIO
 from hgversion import HgVersion
-from mercurial import cmdutil, hg, ui, mdiff, patch, util, node, scmutil
+from mercurial import cmdutil, error, hg, ui, mdiff, patch, util, node, scmutil
 from mercurial.i18n import _
 import sys
 from reviewboard import make_rbclient, ReviewBoardError
@@ -129,7 +129,7 @@ repository. The following options are available::
         server = ui.config('reviewboard', 'server')
 
     if not server:
-        raise util.Abort(
+        raise error.Abort(
                 _('please specify a reviewboard server in your .hgrc file') )
 
     encoding = ui.config('reviewboard', 'encoding')
@@ -268,7 +268,7 @@ repository. The following options are available::
                                     trace=opts.get('apitrace'),
                                     disable_ssl_verification=disable_ssl_verification)
     except Exception, e:
-        raise util.Abort(_(str(e)))
+        raise error.Abort(_(str(e)))
 
     if request_id:
         try:
@@ -276,7 +276,7 @@ repository. The following options are available::
                 parentdiff=parentdiff, publish=opts.get('publish') or
                     not ui.configbool('reviewboard', 'explicit_publish_update'))
         except ReviewBoardError, msg:
-            raise util.Abort(_(str(msg)))
+            raise error.Abort(_(str(msg)))
     else:
         repo_id = None
         repo_name = None
@@ -292,17 +292,17 @@ repository. The following options are available::
             try:
                 repositories = reviewboard.repositories()
             except ReviewBoardError, msg:
-                raise util.Abort(_(str(msg)))
+                raise error.Abort(_(str(msg)))
 
             if not repositories:
-                raise util.Abort(_('no repositories configured at %s' % server))
+                raise error.Abort(_('no repositories configured at %s' % server))
 
             if repo_name:
                 repo_dict = dict((r.name, r.id) for r in repositories)
                 if repo_name in repo_dict:
                     repo_id = repo_dict[repo_id_opt]
                 else:
-                    raise util.Abort(_('invalid repository name: %s') % repo_name)
+                    raise error.Abort(_('invalid repository name: %s') % repo_name)
             else:
                 ui.status('Repositories:\n')
                 repo_ids = set()
@@ -312,7 +312,7 @@ repository. The following options are available::
                 if len(repositories) > 1:
                     repo_id = ui.prompt('repository id:', 0)
                     if not repo_id in repo_ids:
-                        raise util.Abort(_('invalid repository ID: %s') % repo_id)
+                        raise error.Abort(_('invalid repository ID: %s') % repo_id)
                 else:
                     repo_id = str(repositories[0].id)
                     ui.status('repository id: %s\n' % repo_id)
@@ -323,7 +323,7 @@ repository. The following options are available::
             if opts.get('publish'):
                 reviewboard.publish(request_id)
         except ReviewBoardError, msg:
-            raise util.Abort(_(str(msg)))
+            raise error.Abort(_(str(msg)))
 
     request_url = '%s/%s/%s/' % (server, "r", request_id)
 
