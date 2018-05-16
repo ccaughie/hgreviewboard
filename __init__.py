@@ -9,7 +9,13 @@ import sys
 from reviewboard import make_rbclient, ReviewBoardError
 
 cmdtable = {}
-command = cmdutil.command(cmdtable)
+
+try:
+    from mercurial import registrar
+    command = registrar.command(cmdtable)
+except (ImportError, AttributeError):
+    # Dropped in 4.6
+    command = cmdutil.command(cmdtable)
 
 @command('postreview',
         [('o', 'outgoing', False,
