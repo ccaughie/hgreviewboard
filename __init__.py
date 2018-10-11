@@ -176,9 +176,9 @@ repository. The following options are available::
 
     parent = opts.get('parent')
     if parent:
-        parent = repo[parent]
+        parent = scmutil.revsymbol(repo, parent)
     else:
-        parent = repo[rev].parents()[0]
+        parent = scmutil.revsymbol(repo, rev).parents()[0]
 
     outgoing = opts.get('outgoing')
     outgoingrepo = opts.get('outgoingrepo')
@@ -190,7 +190,7 @@ repository. The following options are available::
         repo_id_opt = ui.config('reviewboard','repoid')
 
     if master:
-        rparent = repo[master]
+        rparent = scmutil.revsymbol(repo, master)
     elif outgoingrepo:
         rparent = remoteparent(ui, repo, opts, rev, upstream=outgoingrepo)
     elif outgoing:
@@ -211,7 +211,7 @@ repository. The following options are available::
 
     fields = {}
 
-    c = repo[rev]
+    c = scmutil.revsymbol(repo, rev)
     if parent is None:
         parent = repo[0]
     changesets_string = get_changesets_string(repo, parent, c)
@@ -350,7 +350,7 @@ def remoteparent(ui, repo, opts, rev, upstream=None):
     ancestors = repo.changelog.ancestors([repo.changelog.rev(repo.lookup(rev))])
     for o in out:
         orev = repo[o]
-        a, b, c = repo.changelog.nodesbetween([orev.node()], [repo[rev].node()])
+        a, b, c = repo.changelog.nodesbetween([orev.node()], [scmutil.revsymbol(repo, rev).node()])
         if a:
             return orev.parents()[0]
 
